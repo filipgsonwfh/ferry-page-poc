@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Tax-free shop · Stena Germanica</title>
+<link rel="stylesheet" href="colors_and_type.css" />
+<link rel="icon" href="assets/StenaFlag.svg" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  body { margin: 0; background: #fff; }
+  /* Subtle scrollbar styling */
+  aside::-webkit-scrollbar { width: 6px; }
+  aside::-webkit-scrollbar-thumb { background: #c5c8cb; border-radius: 99px; }
+</style>
+</head>
+<body data-screen-label="Tax-free shop">
+<div id="root"></div>
+
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="germanica-data.jsx"></script>
+<script type="text/babel" src="germanica-shell.jsx"></script>
+<script type="text/babel" src="germanica-product-tile.jsx"></script>
+<script type="text/babel" src="germanica-shop.jsx"></script>
+
+<script type="text/babel">
+const { useState, useMemo, useEffect, useRef } = React;
+
+function App() {
+  const { lang, setLang } = useLang();
+  const [cat, setCat] = useState('');
+  const [sub, setSub] = useState('');
+  const [brand, setBrand] = useState('');
+  const [badge, setBadge] = useState('');
+  const [priceMax, setPriceMax] = useState(2000);
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState('feat');
+  const [view, setView] = useState('grid');
+  const [open, setOpen] = useState(null); // product detail dialog
+
+  const gridRef = useRef(null);
+
+  // Re-render lucide icons whenever language / filters change
+  useEffect(() => { setTimeout(() => lucide.createIcons(), 0); });
+
+  const filtered = useMemo(() => {
+    let list = window.PRODUCTS.slice();
+    if (cat) list = list.filter(p => p.cat === cat);
+    if (sub) list = list.filter(p => p.sub === sub);
+    if (brand) list = list.filter(p => p.brand === brand);
+    if (badge) list = list.filter(p => p.badge === badge || (badge === 'member' && p.member));
+    if (priceMax < 2000) list = list.filter(p => p.price.sek <= priceMax);
+    if (q.trim()) {
+      const Q = q.trim().toLowerCase();
+      list = list.filter(p =>
+        p.brand.toLowerCase().includes(Q) ||
+        p.name.en.toLowerCase().includes(Q) ||
+        p.name.sv.toLowerCase().includes(Q) ||
+        (p.sub || '').toLowerCase().includes(Q)
+      );
+    }
+    if (sort === 'priceA') list.sort((a, b) => a.price.sek - b.price.sek);
+    if (sort === 'priceD') list.sort((a, b) => b.price.sek - a.price.sek);
+    if (sort === 'name')   list.sort((a, b) => a.name.en.localeCompare(b.name.en));
+    // 'feat' = original order — already with badged items mixed
+    return list;
+  }, [cat, sub, brand, badge, priceMax, q, sort]);
+
+  const onPickCat = (c) => {
+    setCat(c); setSub('');
+    setTimeout(() => gridRef.current && gridRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  };
+
+  // Active filter pills for the toolbar
+  const pills = [];
+  if (cat) pills.push({ label: cat, on: () => { setCat(''); setSub(''); } });
+  if (sub) pills.push({ label: sub, on: () => setSub('') });
+  if (brand) pills.push({ label: brand, on: () => setBrand('') });
+  if (badge) pills.push({ label: badge, on: () => setBadge('') });
+  if (q) pills.push({ label: `"${q}"`, on: () => setQ('') });
+
+  return (
+    <>
+      <GermHeader active="shop" lang={lang} setLang={setLang}/>
+      <ShopHero lang={lang}/>
+      <ShopCategoryGrid lang={lang} onPick={onPickCat}/>
+      <FeaturedOffers lang={lang}/>
+
+      {/* Catalogue + filters */}
+      <section ref={gridRef} style={{ padding: '24px 32px 96px', background: STENA.molnigare, borderTop: `1px solid ${STENA.ui300}` }} data-screen-label="Catalogue">
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '36px 0 24px', flexWrap: 'wrap', gap: 16 }}>
+            <div>
+              <h2 style={{ fontFamily: STENA.fontHeading, fontSize: 36, fontWeight: 700, letterSpacing: '-.012em', color: STENA.ui900, margin: '0 0 6px' }}>
+                {lang === 'sv' ? 'Hela katalogen' : 'The full catalogue'}
+              </h2>
+              <p style={{ fontSize: 15, color: STENA.ui700, margin: 0 }}>
+                {lang === 'sv'
+                  ? `Visar ${filtered.length} av ${window.PRODUCTS.length} produkter ombord på Stena Germanica.`
+                  : `Showing ${filtered.length} of ${window.PRODUCTS.length} products on board Stena Germanica.`}
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 24, alignItems: 'flex-start' }}>
+            <ShopFilters lang={lang} cat={cat} setCat={setCat} sub={sub} setSub={setSub} brand={brand} setBrand={setBrand} badge={badge} setBadge={setBadge} priceMax={priceMax} setPriceMax={setPriceMax}/>
+
+            <div>
+              <ShopToolbar lang={lang} q={q} setQ={setQ} sort={sort} setSort={setSort} view={view} setView={setView}/>
+
+              {/* Active filter pills */}
+              {pills.length > 0 && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+                  {pills.map((p, i) => (
+                    <button key={i} onClick={p.on} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px 6px 14px',
+                      borderRadius: 9999, background: STENA.coreBlue, color: '#fff',
+                      border: 'none', fontSize: 12, fontFamily: 'inherit', fontWeight: 500, textTransform: 'capitalize', cursor: 'pointer',
+                    }}>
+                      {p.label}<i data-lucide="x" style={{ width: 12, height: 12 }}></i>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* The grid / list */}
+              {view === 'grid' ? (
+                filtered.length === 0 ? (
+                  <EmptyState lang={lang} onReset={() => { setCat(''); setSub(''); setBrand(''); setBadge(''); setQ(''); setPriceMax(2000); }}/>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+                    {filtered.map(p => (
+                      <div key={p.id} onClick={() => setOpen(p)}>
+                        <ProductTile p={p} lang={lang}/>
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {filtered.map(p => <ProductRow key={p.id} p={p} lang={lang} onOpen={setOpen}/>)}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <MoreMemberPitch lang={lang}/>
+
+      {/* Pre-order how-it-works */}
+      <section style={{ padding: '80px 32px', background: '#fff' }} data-screen-label="How pre-order works">
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <h2 style={{ fontFamily: STENA.fontHeading, fontSize: 36, fontWeight: 700, color: STENA.ui900, margin: '0 0 8px', letterSpacing: '-.012em' }}>
+            {lang === 'sv' ? 'Så fungerar förbeställning' : 'How pre-order works'}
+          </h2>
+          <p style={{ fontSize: 16, color: STENA.ui700, margin: '0 0 40px', maxWidth: 620 }}>
+            {lang === 'sv'
+              ? 'Tre steg från korg till hytt. Helt gratis och ingen extra kö ombord.'
+              : 'Three steps from basket to cabin. No extra cost and no queue on board.'}
+          </p>
+          <ol style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, listStyle: 'none', padding: 0, margin: 0 }}>
+            {(lang === 'sv' ? [
+              ['shopping-cart', '1. Lägg i korgen', 'Förbeställ via MyStenaLine fram till 5 dagar före avgång.'],
+              ['ticket', '2. Visa ditt bokningsnummer', 'Vid shoppen ombord. Vi har plockat ihop allt åt dig.'],
+              ['ship', '3. Hämta innan ankomst', 'Shoppen öppnar 30 min efter avgång och stänger 1 h före ankomst.'],
+            ] : [
+              ['shopping-cart', '1. Add to basket', 'Pre-order via MyStenaLine up to 5 days before departure.'],
+              ['ticket', '2. Show your booking number', 'At the shop on board. We\'ve packed it all for you.'],
+              ['ship', '3. Pick up before arrival', 'The shop opens 30 min after departure and closes 1 h before arrival.'],
+            ]).map(([icon, title, body], i) => (
+              <li key={i} style={{ background: STENA.molnigare, borderRadius: 12, padding: 28, border: `1px solid ${STENA.ui300}` }}>
+                <div style={{ width: 48, height: 48, borderRadius: 9999, background: STENA.himmelLighter, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
+                  <i data-lucide={icon} style={{ width: 22, height: 22, color: STENA.coreBlue }}></i>
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: STENA.ui900, margin: '0 0 6px' }}>{title}</h3>
+                <p style={{ fontSize: 14, color: STENA.ui700, margin: 0, lineHeight: 1.55 }}>{body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <GermFooter lang={lang}/>
+      <ProductDialog p={open} lang={lang} onClose={() => setOpen(null)}/>
+    </>
+  );
+}
+
+function EmptyState({ lang, onReset }) {
+  return (
+    <div style={{
+      padding: 48, textAlign: 'center', background: '#fff', border: `1px dashed ${STENA.ui400}`, borderRadius: 12,
+    }}>
+      <i data-lucide="search-x" style={{ width: 40, height: 40, color: STENA.ui600 }}></i>
+      <h3 style={{ fontSize: 18, fontWeight: 700, color: STENA.ui900, margin: '12px 0 6px' }}>
+        {lang === 'sv' ? 'Inga produkter hittade' : 'No products found'}
+      </h3>
+      <p style={{ fontSize: 14, color: STENA.ui700, margin: '0 0 18px' }}>
+        {lang === 'sv' ? 'Prova att ändra eller rensa dina filter.' : 'Try changing or clearing your filters.'}
+      </p>
+      <button onClick={onReset} style={{
+        padding: '10px 20px', borderRadius: 9999, background: STENA.coreBlue, color: '#fff',
+        border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+      }}>{lang === 'sv' ? 'Rensa filter' : 'Clear filters'}</button>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
