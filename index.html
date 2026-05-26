@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Bars &amp; lounges · Stena Scandinavica</title>
+<link rel="stylesheet" href="colors_and_type.css" />
+<link rel="icon" href="assets/StenaFlag.svg" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  body { margin: 0; background: #fff; }
+</style>
+</head>
+<body data-screen-label="Bars & lounges">
+<div id="root"></div>
+
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="germanica-data.jsx"></script>
+<script type="text/babel" src="germanica-shell.jsx"></script>
+
+<script type="text/babel">
+const { useEffect, useState } = React;
+const S = { ...window.STENA, coreRed: window.STENA.sjobod, fontHeading: 'var(--swui-font-primary), system-ui, sans-serif' };
+
+// ============ HERO — Stena brand: blue, real photo, confident ============
+function BarHero({ lang }) {
+  const t = lang === 'sv' ? {
+    eyebrow: 'BARER & LOUNGER · DÄCK 9',
+    title: 'Tre barer.\nEn skylounge.',
+    lead: 'Från en livlig sportbar till panoramautsikt över Östersjön — varje kväll har Stena Scandinavica en plats som passar.',
+    cta: 'Se cocktailmenyn',
+    secondary: 'Kvällens program',
+  } : {
+    eyebrow: 'BARS & LOUNGES · DECK 9',
+    title: 'Three bars.\nOne sky lounge.',
+    lead: "From a buzzing sports bar to panoramic Baltic views — every evening on Stena Scandinavica has a seat that suits.",
+    cta: 'See cocktail menu',
+    secondary: "Tonight's programme",
+  };
+  return (
+    <section style={{
+      position: 'relative', background: '#fff', overflow: 'hidden',
+    }} data-screen-label="Bar hero">
+      <div style={{
+        maxWidth: 1280, margin: '0 auto', padding: '64px 32px 0',
+        display: 'grid', gridTemplateColumns: '1fr 1.05fr', gap: 56, alignItems: 'center', minHeight: 540,
+      }}>
+        {/* Left — text */}
+        <div>
+          <div style={{ fontSize: 12, letterSpacing: '.18em', fontWeight: 700, color: S.coreRed, marginBottom: 18 }}>{t.eyebrow}</div>
+          <h1 style={{ color: S.coreBlue, fontFamily: S.fontHeading, fontSize: 'clamp(44px, 5.2vw, 72px)', fontWeight: 700, lineHeight: 1.0, letterSpacing: '-.022em', margin: '0 0 22px', whiteSpace: 'pre-line' }}>{t.title}</h1>
+          <p style={{ fontSize: 18, lineHeight: 1.55, color: S.ui700, maxWidth: 520, margin: '0 0 32px' }}>{t.lead}</p>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <a href="#cocktails" style={{
+              padding: '15px 30px', borderRadius: 9999, background: S.coreRed, color: '#fff',
+              border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none',
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+            }}>{t.cta} <i data-lucide="arrow-right" style={{ width: 16, height: 16 }}></i></a>
+            <button style={{
+              padding: '15px 28px', borderRadius: 9999, background: '#fff', color: S.coreBlue,
+              border: `1.5px solid ${S.coreBlue}`, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+            }}>{t.secondary}</button>
+          </div>
+        </div>
+        {/* Right — real photo */}
+        <div style={{ position: 'relative', minHeight: 460 }}>
+          <div style={{
+            position: 'relative', borderRadius: 16, overflow: 'hidden', height: 460,
+            backgroundImage: 'url(assets/lifestyle/bar-deck-cafe.jpg)',
+            backgroundSize: 'cover', backgroundPosition: 'center',
+          }}/>
+          {/* Floating second photo */}
+          <div style={{
+            position: 'absolute', right: -16, bottom: -32, width: 220, height: 280,
+            borderRadius: 12, overflow: 'hidden', border: '6px solid #fff',
+            boxShadow: '0 16px 40px rgba(0,30,80,0.18)',
+            backgroundImage: 'url(assets/lifestyle/bar-lets-get-social.png)',
+            backgroundSize: 'cover', backgroundPosition: 'center',
+          }}/>
+        </div>
+      </div>
+      {/* Bottom spacer to prevent overlap clip */}
+      <div style={{ height: 64 }}/>
+    </section>
+  );
+}
+
+// ============ THREE BARS ============
+function ThreeBars({ lang, venue, setVenue }) {
+  const bars = lang === 'sv' ? [
+    { id: 'sky', name: 'Sky Bar', deck: 9, hours: '17:00 – 02:00',
+      tag: 'Panorama · Live-musik · Cocktails',
+      blurb: 'Översta däck, panoramafönster åt fören. Live-musik kvällar. Husets signaturcocktails och en lugn morgonkaffe när du har lust att vara först uppe.',
+      bg: 'linear-gradient(135deg, #1a3a5e 0%, #c44a2e 100%)' },
+    { id: 'pub', name: 'The Anchor Pub', deck: 9, hours: '15:00 – 01:00',
+      tag: 'Pub · Sport · Hantverksöl',
+      blurb: 'Pub i klassisk stil med fatöl, hantverks-IPA och stora skärmar för matchkvällar. Spelmaskin och dartbana för dem som vill stå upp.',
+      bg: 'linear-gradient(135deg, #4a3a28 0%, #2a1f15 100%)' },
+    { id: 'plus', name: 'Stena Plus Lounge', deck: 9, hours: '06:30 – 23:00',
+      tag: 'Tyst · Inkluderat',
+      blurb: 'Tyst lounge med fri kaffe, snacks, fri WiFi och panorama. Ingår för Captain’s Class-passagerare; köp dagspass i receptionen.',
+      bg: 'linear-gradient(135deg, #5a8eb8 0%, #1f5db8 100%)' },
+  ] : [
+    { id: 'sky', name: 'Sky Bar', deck: 9, hours: '17:00 – 02:00',
+      tag: 'Panorama · Live music · Cocktails',
+      blurb: 'Top deck, panoramic windows facing the bow. Live music every evening. House signature cocktails — and a quiet morning coffee if you fancy being first up.',
+      bg: 'linear-gradient(135deg, #1a3a5e 0%, #c44a2e 100%)' },
+    { id: 'pub', name: 'The Anchor Pub', deck: 9, hours: '15:00 – 01:00',
+      tag: 'Pub · Sport · Craft beer',
+      blurb: 'Classic pub atmosphere with draught lager, craft IPA and big screens for match nights. Pinball machine and a dartboard for those who like to stand.',
+      bg: 'linear-gradient(135deg, #4a3a28 0%, #2a1f15 100%)' },
+    { id: 'plus', name: 'Stena Plus Lounge', deck: 9, hours: '06:30 – 23:00',
+      tag: 'Quiet · Included',
+      blurb: 'A quiet lounge with complimentary coffee, snacks, free WiFi and a panoramic view. Included for Captain’s Class passengers; day passes available at reception.',
+      bg: 'linear-gradient(135deg, #5a8eb8 0%, #1f5db8 100%)' },
+  ];
+  return (
+    <section style={{ padding: '88px 32px 48px', background: '#fff' }} data-screen-label="Three bars">
+      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 12, letterSpacing: '.16em', fontWeight: 700, color: S.coreBlue, marginBottom: 12 }}>
+            {lang === 'sv' ? 'TRE BARER' : 'THREE BARS'}
+          </div>
+          <h2 style={{ fontFamily: S.fontHeading, fontSize: 44, fontWeight: 700, letterSpacing: '-.012em', color: S.ui900, margin: '0 0 8px', lineHeight: 1.1 }}>
+            {lang === 'sv' ? 'Olika stämningar, samma däck.' : 'Different moods, same deck.'}
+          </h2>
+          <p style={{ fontSize: 15, color: S.ui700, margin: '0 0 20px', maxWidth: 620, lineHeight: 1.55 }}>
+            {lang === 'sv' ? 'Välj en bar för att se kvällens program just där, eller bläddra alla.' : 'Pick a bar to see what\u2019s on there tonight, or browse all three.'}
+          </p>
+
+          {/* Venue filter pills */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {[
+              { id: 'all', label: lang === 'sv' ? 'Alla barer' : 'All bars' },
+              ...bars.map(b => ({ id: b.id, label: b.name })),
+            ].map(p => (
+              <button key={p.id} onClick={() => setVenue(p.id)} style={{
+                padding: '10px 20px', borderRadius: 9999,
+                background: venue === p.id ? S.coreBlue : '#fff',
+                color: venue === p.id ? '#fff' : S.ui700,
+                border: `1px solid ${venue === p.id ? S.coreBlue : S.ui300}`,
+                fontSize: 14, fontWeight: venue === p.id ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+              }}>{p.label}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          {bars.map(b => {
+            const isActive = venue === b.id;
+            const isDimmed = venue !== 'all' && !isActive;
+            return (
+            <article key={b.id} onClick={() => setVenue(isActive ? 'all' : b.id)} style={{
+              borderRadius: 16, overflow: 'hidden', position: 'relative',
+              background: b.bg, color: '#fff', padding: 32, minHeight: 360,
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+              cursor: 'pointer',
+              opacity: isDimmed ? 0.5 : 1,
+              outline: isActive ? `3px solid ${S.coreBlue}` : 'none',
+              outlineOffset: 3,
+              transition: 'opacity .18s ease, outline-color .18s ease',
+            }}>
+              <div>
+                <div style={{
+                  display: 'inline-flex', padding: '5px 11px', borderRadius: 9999,
+                  background: 'rgba(255,255,255,.16)', fontSize: 11, fontWeight: 700, letterSpacing: '.06em', marginBottom: 16,
+                }}>{lang === 'sv' ? `Däck ${b.deck}` : `Deck ${b.deck}`}</div>
+                <h3 style={{ color: '#fff', fontFamily: S.fontHeading, fontSize: 32, fontWeight: 700, margin: '0 0 8px', letterSpacing: '-.012em' }}>{b.name}</h3>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,.75)', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 600, marginBottom: 18 }}>{b.tag}</div>
+                <p style={{ fontSize: 14, color: '#dceaf6', margin: 0, lineHeight: 1.55, textWrap: 'pretty' }}>{b.blurb}</p>
+              </div>
+              <div style={{
+                marginTop: 28, paddingTop: 18, borderTop: '1px solid rgba(255,255,255,.18)',
+                display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'rgba(255,255,255,.85)',
+              }}>
+                <i data-lucide="clock" style={{ width: 14, height: 14 }}></i>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{b.hours}</span>
+              </div>
+            </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============ COCKTAIL MENU — editorial, recipe cards ============
+function CocktailMenu({ lang }) {
+  const cocktails = window.COCKTAILS;
+  const [active, setActive] = useState(0);
+  const c = cocktails[active];
+  return (
+    <section id="cocktails" style={{ padding: '88px 32px', background: S.molnigare, borderTop: `1px solid ${S.ui300}`, borderBottom: `1px solid ${S.ui300}` }} data-screen-label="Cocktail menu">
+      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ fontSize: 12, letterSpacing: '.16em', fontWeight: 700, color: S.coreBlue, marginBottom: 12 }}>
+            {lang === 'sv' ? 'SIGNATURCOCKTAILS' : 'SIGNATURE COCKTAILS'}
+          </div>
+          <h2 style={{ fontFamily: S.fontHeading, fontSize: 44, fontWeight: 700, letterSpacing: '-.012em', color: S.ui900, margin: '0 0 8px', lineHeight: 1.1, maxWidth: 720 }}>
+            {lang === 'sv' ? 'Tre drinkar mixade ombord.' : 'Three drinks mixed on board.'}
+          </h2>
+          <p style={{ fontSize: 16, color: S.ui700, margin: 0, maxWidth: 600, lineHeight: 1.55 }}>
+            {lang === 'sv' ? 'Plockas i baren från första kvällsavgång. 145 kr per glas. Stena MORE-medlemmar betalar 125 kr.' : 'Available at the bar from first evening departure. 145 SEK per glass. Stena MORE members pay 125 SEK.'}
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+          {cocktails.map((co, i) => (
+            <button key={co.id} onClick={() => setActive(i)} style={{
+              padding: '10px 20px', borderRadius: 9999,
+              background: active === i ? S.coreBlue : '#fff',
+              color: active === i ? '#fff' : S.ui700,
+              border: `1px solid ${active === i ? S.coreBlue : S.ui300}`,
+              fontSize: 14, fontWeight: active === i ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit',
+            }}>{co.name[lang]}</button>
+          ))}
+        </div>
+
+        {/* Recipe card */}
+        <article style={{
+          display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', borderRadius: 16, overflow: 'hidden',
+          background: '#fff', border: `1px solid ${S.ui300}`,
+        }}>
+          {/* Visual side */}
+          <div style={{
+            position: 'relative', minHeight: 460,
+            background: `linear-gradient(135deg, ${c.color1} 0%, ${c.color2} 100%)`,
+            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.35) 100%), url(assets/cocktails/${c.id === 'absolut-bloody-mary' ? 'bloody-mary' : c.id === 'botanist-gin' ? 'botanist-gin' : 'aperol-spritz'}.png)`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
+          }}>
+            <div style={{
+              position: 'absolute', bottom: 24, left: 24, right: 24,
+              fontSize: 11, color: 'rgba(255,255,255,.95)', textTransform: 'uppercase', letterSpacing: '.18em', fontWeight: 700,
+              textShadow: '0 2px 8px rgba(0,0,0,.5)',
+            }}>{c.tagline[lang]}</div>
+          </div>
+
+          {/* Recipe side */}
+          <div style={{ padding: 40 }}>
+            <div style={{ fontSize: 12, color: S.ui600, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 600, marginBottom: 8 }}>
+              {lang === 'sv' ? 'Signatur ombord' : 'Onboard signature'}
+            </div>
+            <h3 style={{ fontFamily: S.fontHeading, fontSize: 36, fontWeight: 700, color: S.ui900, margin: '0 0 24px', lineHeight: 1.05, letterSpacing: '-.012em' }}>
+              {c.name[lang]}
+            </h3>
+
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ fontSize: 11, color: S.ui600, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 600, marginBottom: 12 }}>
+                {lang === 'sv' ? 'Recept' : 'Recipe'}
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {c.ingredients[lang].map((ing, i) => (
+                  <li key={i} style={{ fontSize: 15, color: S.ui900, display: 'flex', alignItems: 'center', gap: 10, lineHeight: 1.4 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: 9999, background: c.color1, flex: 'none' }}/>
+                    {ing}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 11, color: S.ui600, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 600, marginBottom: 8 }}>
+                {lang === 'sv' ? 'Metod' : 'Method'}
+              </div>
+              <p style={{ fontSize: 14, color: S.ui700, margin: 0, lineHeight: 1.6 }}>{c.method[lang]}</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+// ============ BAR PRICE LIST — onboard tariff ============
+function BarPriceList({ lang }) {
+  const m = window.BAR_MENU;
+  return (
+    <section style={{ padding: '88px 32px', background: '#fff' }} data-screen-label="Bar price list">
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 12, letterSpacing: '.16em', fontWeight: 700, color: S.coreBlue, marginBottom: 12 }}>
+            {lang === 'sv' ? 'BARKARTA' : 'BAR LIST'}
+          </div>
+          <h2 style={{ fontFamily: S.fontHeading, fontSize: 36, fontWeight: 700, letterSpacing: '-.012em', color: S.ui900, margin: '0 0 8px', lineHeight: 1.1 }}>
+            {lang === 'sv' ? 'Spritkarta ombord' : 'Spirits list on board'}
+          </h2>
+          <p style={{ fontSize: 14, color: S.ui700, margin: 0 }}>{m.intro[lang]}</p>
+        </div>
+
+        {/* Header row */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 200px 80px 80px',
+          padding: '12px 0', borderBottom: `2px solid ${S.coreBlue}`,
+          fontSize: 11, color: S.ui600, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 700,
+        }}>
+          <div>{lang === 'sv' ? 'Spritslag' : 'Spirit'}</div>
+          <div>{lang === 'sv' ? 'Ursprung' : 'Origin'}</div>
+          <div style={{ textAlign: 'right' }}>4cl</div>
+          <div style={{ textAlign: 'right' }}>6cl</div>
+        </div>
+
+        {/* Sections */}
+        {m.sections.map(sec => (
+          <div key={sec.id} style={{ marginTop: 28 }}>
+            <div style={{ fontFamily: S.fontHeading, fontSize: 22, fontWeight: 700, color: S.coreBlue, margin: '0 0 8px', letterSpacing: '-.005em' }}>
+              {sec.name[lang]}
+            </div>
+            {sec.items.map((it, i) => (
+              <div key={i} style={{
+                display: 'grid', gridTemplateColumns: '1fr 200px 80px 80px',
+                padding: '11px 0', borderBottom: i < sec.items.length - 1 ? `1px dashed ${S.ui300}` : 'none',
+                alignItems: 'baseline',
+              }}>
+                <div style={{ fontSize: 15, color: S.ui900, fontWeight: 500 }}>{it.name}</div>
+                <div style={{ fontSize: 13, color: S.ui600 }}>{it.origin[lang]}</div>
+                <div style={{ textAlign: 'right', fontSize: 14, color: S.ui900, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{it.p4} kr</div>
+                <div style={{ textAlign: 'right', fontSize: 14, color: S.ui900, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{it.p6} kr</div>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        {/* Beer & wine block */}
+        <div style={{ marginTop: 48 }}>
+          <div style={{ fontFamily: S.fontHeading, fontSize: 22, fontWeight: 700, color: S.coreBlue, margin: '0 0 8px', letterSpacing: '-.005em' }}>
+            {lang === 'sv' ? 'Öl, vin & bubbel' : 'Beer, wine & bubbles'}
+          </div>
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 200px 80px 80px',
+            padding: '12px 0', borderBottom: `2px solid ${S.coreBlue}`,
+            fontSize: 11, color: S.ui600, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 700,
+          }}>
+            <div>{lang === 'sv' ? 'Dryck' : 'Drink'}</div>
+            <div></div>
+            <div></div>
+            <div style={{ textAlign: 'right' }}>{lang === 'sv' ? 'Pris' : 'Price'}</div>
+          </div>
+          {m.beerWine.map((it, i) => (
+            <div key={i} style={{
+              display: 'grid', gridTemplateColumns: '1fr 80px',
+              padding: '11px 0', borderBottom: i < m.beerWine.length - 1 ? `1px dashed ${S.ui300}` : 'none',
+              alignItems: 'baseline',
+            }}>
+              <div style={{ fontSize: 15, color: S.ui900, fontWeight: 500 }}>{it.name[lang]}</div>
+              <div style={{ textAlign: 'right', fontSize: 14, color: S.ui900, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{it.price} kr</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footnote */}
+        <div style={{
+          marginTop: 32, padding: 18, background: S.molnigare, borderRadius: 10, fontSize: 13, color: S.ui700,
+          display: 'flex', alignItems: 'flex-start', gap: 10,
+        }}>
+          <i data-lucide="info" style={{ width: 16, height: 16, color: S.coreBlue, marginTop: 2, flex: 'none' }}></i>
+          <div>
+            {lang === 'sv'
+              ? 'Alkohol serveras till passagerare 18 år och uppåt. Servering kan begränsas under svår sjö. Tipping är inte obligatoriskt — ingår i priset.'
+              : 'Alcohol is served to passengers aged 18+. Service may be limited in heavy seas. Gratuities are not required — included in the price.'}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============ TONIGHT'S PROGRAMME ============
+function TonightProgramme({ lang, venue }) {
+  const allSlots = lang === 'sv' ? [
+    ['19:00', 'DJ-set', 'Sky Bar', 'sky', 'Mjuk balearisk start på kvällen.'],
+    ['20:00', 'Matchkväll · storbild', 'The Anchor Pub', 'pub', 'Allsvenskan på storbild. Hantverksöl på fat.'],
+    ['21:00', 'Live: trio från Göteborg', 'Sky Bar', 'sky', 'Sväng, soul och egna versioner — 90 min spelning.'],
+    ['21:30', 'Tyst timme', 'Stena Plus Lounge', 'plus', 'Svag belysning, lugn musik, ingen tv.'],
+    ['22:30', 'Pubquiz', 'The Anchor Pub', 'pub', 'Lag på 4. Vinnare får en flaska bubbel.'],
+    ['23:30', 'Sen DJ', 'Sky Bar', 'sky', 'Tempo upp. Dansgolvet öppnar.'],
+  ] : [
+    ['19:00', 'DJ set', 'Sky Bar', 'sky', 'Smooth Balearic kick-off to the evening.'],
+    ['20:00', 'Match night · big screen', 'The Anchor Pub', 'pub', 'Allsvenskan on the big screen. Craft beer on tap.'],
+    ['21:00', 'Live: Gothenburg trio', 'Sky Bar', 'sky', 'Soul, swing and originals — 90-minute set.'],
+    ['21:30', 'Quiet hour', 'Stena Plus Lounge', 'plus', 'Low lights, calm music, no TV.'],
+    ['22:30', 'Pub quiz', 'The Anchor Pub', 'pub', 'Teams of 4. Winner takes a bottle of bubbles.'],
+    ['23:30', 'Late DJ', 'Sky Bar', 'sky', 'Tempo up. Dance floor opens.'],
+  ];
+  const slots = venue === 'all' ? allSlots : allSlots.filter(s => s[3] === venue);
+  return (
+    <section style={{ padding: '64px 32px', background: '#0a1628', color: '#fff' }} data-screen-label="Tonight's programme">
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 12, letterSpacing: '.16em', fontWeight: 700, color: '#ffb168', marginBottom: 12 }}>
+            {lang === 'sv' ? 'IKVÄLL OMBORD' : "TONIGHT ON BOARD"}
+          </div>
+          <h2 style={{ color: '#fff', fontFamily: S.fontHeading, fontSize: 36, fontWeight: 700, letterSpacing: '-.012em', margin: '0 0 8px', lineHeight: 1.1 }}>
+            {lang === 'sv' ? 'Programmet, kväll efter kväll.' : 'The programme, night after night.'}
+          </h2>
+        </div>
+        <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {slots.map(([time, title, place, _vid, body], i) => (
+            <li key={i} style={{
+              display: 'grid', gridTemplateColumns: '100px 1fr 200px',
+              padding: '20px 0', borderTop: i === 0 ? '1px solid rgba(255,255,255,.16)' : '1px solid rgba(255,255,255,.16)',
+              alignItems: 'baseline', gap: 24,
+            }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#ffb168', fontVariantNumeric: 'tabular-nums' }}>{time}</div>
+              <div>
+                <h3 style={{ color: '#fff', fontSize: 17, fontWeight: 700, margin: '0 0 4px' }}>{title}</h3>
+                <p style={{ fontSize: 14, color: '#9bc6e8', margin: 0, lineHeight: 1.5 }}>{body}</p>
+              </div>
+              <div style={{ fontSize: 13, color: '#dceaf6', textAlign: 'right' }}>{place}</div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+// ============ APP ============
+function App() {
+  const { lang, setLang } = useLang();
+  const [venue, setVenue] = useState('all'); // all | sky | pub | plus
+  useEffect(() => { setTimeout(() => lucide.createIcons(), 0); });
+  return (
+    <>
+      <GermHeader active="bar" lang={lang} setLang={setLang}/>
+      <BarHero lang={lang}/>
+      <ThreeBars lang={lang} venue={venue} setVenue={setVenue}/>
+      <CocktailMenu lang={lang}/>
+      <BarPriceList lang={lang}/>
+      <TonightProgramme lang={lang} venue={venue}/>
+      <GermFooter lang={lang}/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
